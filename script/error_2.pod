@@ -1,0 +1,11 @@
+=head1 HEADER
+
+=begin test
+
+  sub error { 1/0 }
+  
+  error() ;
+
+=end test
+
+=cut 
