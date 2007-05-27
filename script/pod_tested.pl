@@ -1,5 +1,7 @@
 #!/usr/bin/perl
 
+package pod_tested ;
+
 use strict ;
 use warnings ;
 
@@ -13,7 +15,7 @@ use Getopt::Long ;
 use vars qw ($VERSION);
 $VERSION     = 0.01;
 
-my ($output, $input, $verbose, $help) ;
+my ($output, $input, $verbose, $verbose_pod_generation, $help) ;
 
 if
 	(
@@ -22,6 +24,7 @@ if
 		'i|input=s' => \$input,
 		'o|output=s' => \$output,
 		'v|verbose'  => \$verbose,
+		'verbose_pod_generation'  => \$verbose_pod_generation,
 		'help'  => \$help,
 		)
 	)
@@ -30,14 +33,48 @@ if
 	
 	$output = $input . '.tested.pod' unless defined $output ;
 
+	croak 'Input and output are the same!' if $input eq $output ;
+	
 	my @options_to_pod_tested ;
+	push @options_to_pod_tested, (INPUT => $input) ;
 	push @options_to_pod_tested, (VERBOSE  => $verbose) if defined $verbose ;
+	push @options_to_pod_tested, (VERBOSE_POD_GENERATION  => $verbose_pod_generation) if defined $verbose_pod_generation ;
 	
 	my $parser = POD::Tested->new(@options_to_pod_tested);
 	$parser->parse_from_file($input) ;	
 
-	warn "Generating '$output'.\n" ;
-	write_file($output, $parser->GetPOD()) ;
+	my $test = Test::More->builder ;
+	use Data::TreeDumper ;
+	#~ print DumpTree [$test->details()], 'Tests results:' ;
+	
+	my $number_of_failed_tests = grep {$_->{ok} != 1} $test->details() ;
+
+	if($number_of_failed_tests)
+		{
+		my @failed_indexes ;
+		my $index = 1 ;
+		
+		for my $test ($test->details())
+			{
+			push @failed_indexes, $index unless $test->{ok} ;
+			$index++ ;
+			}
+		
+		my $list_of_failed = join(', ', @failed_indexes) ;
+		print "# No POD output will be generated.\n# Failed tests: $list_of_failed.\n" ;
+		
+		if(-e $output)
+			{
+			use File::Copy ;
+			move $output, "${output}.failed_pod_tested.txt" ;
+			print "# Moving '$output' to '${output}.failed_pod_tested.txt'\n" ;
+			}
+		}
+	else
+		{
+		print "# Generating POD in '$output'.\n" ;
+		write_file($output, $parser->GetPOD()) ;
+		}
 	}
 
 #------------------------------------------------------------------------------
@@ -59,6 +96,7 @@ Options
 	-i|input
 	-o|output
 	-v|verbose
+	-verbose_pod_generation
 	
 Input file format
 
@@ -93,3 +131,4 @@ EOW
 
 #------------------------------------------------------------------------------
 
+1 ;

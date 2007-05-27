@@ -6,10 +6,7 @@ Some Text
 
 =begin test
 
-  my $cc = 'cc' ;
-  my $expected_cc = 'cc' ;
-  
-  is($cc_value, $expected_output, , 'expected value') ;
+ok(0) ;
 
 =end test
 

@@ -1,6 +1,6 @@
 ---
 name: POD-Tested
-version: 0.01
+version: 0.02
 author:
   - 'Khemir Nadim ibn Hamouda. <nadim@khemir.net>'
 abstract: Test the code in your POD and generates POD.
@@ -10,6 +10,8 @@ resources:
 requires:
   Data::Compare: 0
   Data::TreeDumper: 0
+  File::Copy: 0
+  Lexical::Persistence: 0
   Readonly: 0
   Sub::Exporter: 0
   Test::Block: 0
@@ -27,7 +29,7 @@ requires:
 provides:
   POD::Tested:
     file: lib/POD/Tested.pm
-    version: 0.01
+    version: 0.02
 generated_by: Module::Build version 0.2805
 meta-spec:
   url: http://module-build.sourceforge.net/META-spec-v1.2.html

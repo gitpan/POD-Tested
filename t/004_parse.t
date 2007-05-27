@@ -437,6 +437,7 @@ throws_ok
 	qr/Illegal division by zero/, 'run time error' ;
 }
 
+
 {
 local $Plan = {'no error' => 1} ; # the one in this test plust the one in the POD
 
@@ -481,6 +482,72 @@ my $io = IO::String->new(<<'EOT') ;
 #something
 
   $b = '2' ;
+
+=end test
+
+EOT
+
+lives_ok
+	{
+	$parser->parse_from_filehandle($io) ;
+	} 'no syntax error' ;
+}
+
+{
+local $Plan = {'verbose pod generation' => 1} ;
+
+my $parser = POD::Tested->new(VERBOSE_POD_GENERATION => 1);
+
+my $io = IO::String->new(<<'EOT') ;
+
+=begin common
+
+#something
+
+  $a = 1 ;
+
+=end common 
+
+=begin test
+
+#something
+
+  $b = '2' ;
+  
+  generate_pod() ;
+
+=end test
+
+EOT
+
+lives_ok
+	{
+	$parser->parse_from_filehandle($io) ;
+	} 'no syntax error' ;
+}
+
+{
+local $Plan = {'input' => 1} ;
+
+my $parser = POD::Tested->new(VERBOSE_POD_GENERATION=> 1, INPUT => 'local string IO');
+
+my $io = IO::String->new(<<'EOT') ;
+
+=begin common
+
+#something
+
+  $a = 1 ;
+
+=end common 
+
+=begin test
+
+#something
+
+  $b = '2' ;
+  
+  generate_pod() ;
 
 =end test
 

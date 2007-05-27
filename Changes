@@ -1,0 +1,8 @@
+0.02
+	FIXED: missing module dependency
+	FIXED: division by zero example
+	FIXED: typos in the documentation
+	ADDED: no POD generation if a test fails
+	ADDED: show list of failures
+	ADDED: --verbose_pod_generation to pod_tested
+	ADDED: output is moved if it existed and a test failed

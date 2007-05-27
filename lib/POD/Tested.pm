@@ -12,10 +12,10 @@ BEGIN
 use Sub::Exporter -setup => { exports => [ qw() ] } ;
 
 use vars qw ($VERSION @ISA @EXPORT_OK %EXPORT_TAGS);
-$VERSION     = 0.01;
+$VERSION     = 0.02;
 
 #~ use version ;
-#~ our $VERSION  = qv('0.01') ;
+#~ our $VERSION  = qv('0.02') ;
 }
 
 #-------------------------------------------------------------------------------------------------------------------------------
@@ -75,13 +75,13 @@ module's documentation.
 
 Let's run the above POD through B<pod_tested.pl>.
 
-$> perl pod_tested.pl -input simple.pod -output simple.tested.pod
-
-	Generating 'simple.tested.pod'.
+	$> perl pod_tested.pl -input simple.pod -output simple.tested.pod
+	
+	# Generating POD in 'simple.tested.pod'.
 	# No tests run!
 
-$> cat simple.tested.pod
-
+	$> cat simple.tested.pod
+	
 	=head1 cookbook
 	
 	=head2 Simple usage
@@ -103,44 +103,18 @@ $> cat simple.tested.pod
 	  my $cc = 'cc' ;
 	  my $expected_cc = 'cc' ;
 	  
-	  is($cc_value, $expected_output) ;
+	  is($cc, $expected_cc, 'expected value') ;
 	
 	=end test
 
 Let's run the above POD through B<pod_tested.pl>.
 
 	$> perl pod_tested.pl -input test.pod -output test.tested.pod
-	Global symbol "$cc_value" requires explicit package name at 'script/test.pod' line 12, <$in_fh> line 15.
-	Global symbol "$expected_output" requires explicit package name at 'script/test.pod' line 12, <$in_fh> line 15.
-	 at script/pod_tested.pl line 31
-	# Looks like your test died before it could output anything.
-
-Oops! This is a rather common error, copy/pasting code and modifying it for pod.
-Let's correct the pod/code.
-
-	=head1 cookbook
-	
-	=head2 Simple usage
-	
-	Some Text
-	
-	=begin test
-	
-	  my $cc = 'cc' ;
-	  my $expected_cc = 'cc' ;
-	  
-	  is($cc, $expected_cc) ;
-	
-	=end test
-
-Let's run the above POD through B<pod_tested.pl>.
-
-	$> perl pod_tested.pl -input test.pod -output test.tested.pod
-	Output from 'script/test.pod:9':
+	# output from 'script/test.pod:9':
 	
 	ok 1 - expected value
 	
-	Generating 'test.tested.pod'.
+	# Generating POD in 'test.tested.pod'.
 	1..1
 
 The Generated POD output goes to the output file you specified. You get the test output on your terminal. The POD
@@ -184,7 +158,7 @@ Most often we want to show an example in the POD and verify it.
 	=begin test
 	
 	  my $expected_output = 'gcc' ;
-	  is($cc_value, $expected_output) ;
+	  is($cc_value, $expected_output, 'expected value') ;
 	
 	=end test
 	
@@ -193,15 +167,15 @@ Most often we want to show an example in the POD and verify it.
 Let's run the above POD through B<pod_tested.pl>.
 
 	$> perl pod_tested.pl -input common.pod -output common.tested.pod
-	Output from 'script/common.pod:9':
+	# output from 'script/common.pod:9':
 	
 	CC = 'gcc'
 	
-	Output from 'script/common.pod:24':
+	# output from 'script/common.pod:24':
 	
 	ok 1 - expected value
 	
-	Generating 'common.tested.pod'.
+	# Generating POD in 'common.tested.pod'.
 	1..1
 
 The POD is:
@@ -226,6 +200,31 @@ The POD is:
 	=cut
 
 =head2 When things go wrong
+
+	=head1 cookbook
+	
+	=head2 Simple usage
+	
+	Some Text
+	
+	=begin test
+	
+	  my $cc = 'cc' ;
+	  my $expected_cc = 'cc' ;
+	  
+	  is($cc_value, $expected_output) ;
+	
+	=end test
+
+Let's run the above POD through B<pod_tested.pl>.
+
+	$> perl pod_tested.pl -input test.pod -output test.tested.pod
+	Global symbol "$cc_value" requires explicit package name at 'script/test.pod' line 12, <$in_fh> line 15.
+	Global symbol "$expected_output" requires explicit package name at 'script/test.pod' line 12, <$in_fh> line 15.
+	 at script/pod_tested.pl line 31
+	# Looks like your test died before it could output anything.
+
+Oops! This is a rather common error, copy/pasting code and modifying it for pod.
 
 The following pod:
 
@@ -282,13 +281,9 @@ produces:
 	
 	=end common
 	
-	More text or code examples. The code below will not be tested as it is not in 
-	test section. (With this module you can put all your code in test sections).
+	More text or code examples. 
 	
-	  my $non_testable_code = 1 ;
-	  
-	  # call a sub
-	  
+	  my $non_tested_code = 1 ;
 	  DoSomething() ;
 	
 	=begin test
@@ -304,41 +299,24 @@ The example above defines a variable in a section and uses it in another section
 
 the output would be:
 
-	Output from 'script/context.pod:7':
+	# output from 'script/context.pod:7':
 	
 	CC = 'CC'
 	
-	Output from 'script/context.pod:24':
+	# output from 'script/context.pod:20':
 	
-	not ok 1 - expected value
-	#   Failed test at 'script/context.pod' line 25.
+	not ok 1
+	#   Failed test at 'script/context.pod' line 21.
 	#          got: 'CC'
 	#     expected: 'gcc'
 	
-	Generating 'context.tested.pod'.
+	# No POD output will be generated.
+	# Failed tests: 1.
 	1..1
 	# Looks like you failed 1 test of 1.
 
-The test fails as it should. Note that the POD is generated anyway. it looks like:
-
-	=head1 HEADER
-	
-	Some text
-	
-	  my $cc_value = 'CC' ;
-	
-	  print "CC = '$cc_value'\n" ;
-	
-	More text or code examples. The code below will not be tested as it is not in
-	test section. You should put all your code in test sections.
-	
-	  my $non_testable_code = 1 ;
-	
-	  # call a sub
-	
-	  DoSomething() ;
-	
-	=cut
+Note that any test fails and the output file already exists, pod_tested will rename the existing file
+so there is no risk for using an invalid file.
 
 =head2 Reseting your context
 
@@ -380,22 +358,22 @@ The test fails as it should. Note that the POD is generated anyway. it looks lik
 
 Running the above pod gives the following output:
 
-	Output from 'script/new_context_error.pod:7':
+	# output from 'script/new_context_error.pod:7':
 	
 	
-	Output from 'script/new_context_error.pod:16':
+	# output from 'script/new_context_error.pod:16':
 	
 	ok 1 - expected value
 	
 	"my" variable $cc_value masks earlier declaration in same scope at 'script/new_context_error.pod' line 24, <$in_fh> line 27.
-	Output from 'script/new_context_error.pod:24':
+	# output from 'script/new_context_error.pod:24':
 	
 	
-	Output from 'script/new_context_error.pod:32':
+	# output from 'script/new_context_error.pod:32':
 	
 	ok 2 - expected value
 	
-	Generating 'new_context_error.tested.pod'.
+	# Generating POD in 'new_context_error.tested.pod'.
 	1..2
 
 Local variables are kept between test sections. What we want is two separate section. This can be achieved with
@@ -441,21 +419,21 @@ B<=for POD::Tested reset>
 
 Gives:
 
-	Output from 'script/new_context.pod:7':
+	# output from 'script/new_context.pod:7':
 	
 	
-	Output from 'script/new_context.pod:15':
+	# output from 'script/new_context.pod:15':
 	
 	ok 1 - expected value
 	
-	Output from 'script/new_context.pod:25':
+	# output from 'script/new_context.pod:25':
 	
 	
-	Output from 'script/new_context.pod:33':
+	# output from 'script/new_context.pod:33':
 	
 	ok 2 - expected value
 	
-	Generating 'new_contex.tested.pod'.
+	# Generating POD in 'new_contex.tested.pod'.
 	1..2
 
 and this POD:
@@ -505,8 +483,6 @@ result of some code execution to the POD. We'll use B<generate_pod> to achieve t
 	  is($cc_value, $expected_output) ;
 	  
 	  generate_pod("  CC = '$expected_output'\n\n") ;
-	  
-	  use Data::TreeDumper ;  
 	  generate_pod($config->GetHistoryDump(NAME => 'CC')) ;
 	
 	=end test
@@ -515,15 +491,15 @@ result of some code execution to the POD. We'll use B<generate_pod> to achieve t
 
 running this gives this output:
 
-	Output from 'script/generate_pod.pod:10':
+	# output from 'script/generate_pod.pod:10':
 	
 	CC = 'acc'
 	
-	Output from 'script/generate_pod.pod:24':
+	# output from 'script/generate_pod.pod:24':
 	
 	ok 1 - expected value
 	
-	Generating 'generate_pod.tested.pod.pod'.
+	# Generating POD in 'generate_pod.tested.pod.pod'.
 	1..1
 
 and the generated POD looks like:
@@ -551,7 +527,7 @@ and the generated POD looks like:
 	
 	=cut
 
-So we don't have to copy/paste output from our modules into our POD as we can generate it directly.
+you don't need to copy/paste output from your modules into your POD as you can generate it directly.
 
 =head2 Using more test modules than the default ones
 
@@ -585,6 +561,10 @@ sub new
 =item * VERBOSE  
 
 Set to true to display extra information when parsing and testing POD.
+
+=item * VERBOSE_POD_GENERATION
+
+Set to true to display the POD added through B<generate_pod()>.
 
 =item * COMMON_TAG 
 
@@ -639,6 +619,7 @@ my $object =
 	{
 	BLOCK_START => 0,
 	VERBOSE     => 0,
+	VERBOSE_POD_GENERATION => 0,
 	STATE       => $EMPTY_STRING,
 	CODE        => $EMPTY_STRING,
 	POD         => $EMPTY_STRING,
@@ -700,6 +681,7 @@ my ($parser, $command, $paragraph, $line_num, $pod_para) = @_ ;
 chomp($paragraph) ;
 chomp($paragraph) ;
 #~ print "<$command> <$paragraph><$line_num>" ;
+
 for($command)
 	{
 	$_ eq 'for' and do
@@ -727,7 +709,17 @@ for($command)
 		{
 		$parser->{STATE} = $EMPTY_STRING;
 		
-		EvalInContext($parser->{LP}, $parser->{CODE}, $parser->{VERBOSE}, $parser->input_file(), $parser->{BLOCK_START}) ;
+		my $input=  $parser->input_file() ;
+		$input = $global_current_active_parser->{INPUT} if defined $global_current_active_parser->{INPUT} ;
+		
+		EvalInContext
+			(
+			$parser->{LP},
+			$parser->{CODE},
+			$parser->{VERBOSE},
+			$input ,
+			$parser->{BLOCK_START}
+			) ;
 		
 		$parser->{CODE} = $EMPTY_STRING ;
 		last ;
@@ -812,9 +804,20 @@ sub generate_pod
 
 =cut
 
-#~ diag $global_current_active_parser->{STATE} . "\n" ;
+my ($pod) = join ($EMPTY_STRING, @_) ;
+$pod ||= $EMPTY_STRING ;
+
+if($global_current_active_parser->{VERBOSE_POD_GENERATION})
+	{
+	my ($package, $file_name, $line) = caller() ;
 	
-$global_current_active_parser->{POD} .= $_[0] ;
+	my $input = '(unknown)';
+	$input = $global_current_active_parser->{INPUT} if defined $global_current_active_parser->{INPUT} ;
+	
+	print "# Generating POD at '$input' line $line:\n" . $pod ;
+	}
+
+$global_current_active_parser->{POD} .= $pod ;
 
 return(1) ;
 }
@@ -838,7 +841,6 @@ my $amount_of_nl = $pod_end =~ tr[\n][\n] ;
 my $padding_nl = "\n" x (2 - $amount_of_nl) ;
 
 return($parser->{POD} . $padding_nl . "=cut\n") ;
-
 }
 
 #-------------------------------------------------------------------------------------------------------------------------------
@@ -854,7 +856,7 @@ Not to be used directly.
 
 my ($lp, $original_code, $verbose, $file, $line) = @_ ;
 
-print "Output from '$file:$line':\n\n" ;
+print "# output from '$file:$line':\n\n" ;
 
 my($code_as_text, $code) = GetWrappedCode($lp, $EMPTY_STRING, $original_code, $EMPTY_STRING, $file, $line) ;
 
@@ -873,8 +875,11 @@ EOC
 #~ EOC
 
 eval { $code->() } ;
-croak $EVAL_ERROR if $EVAL_ERROR ;
-
+if($EVAL_ERROR)
+	{
+	croak $EVAL_ERROR  ;
+	}	
+	
 print "\n" ;
 
 return(1) ;
@@ -967,6 +972,8 @@ L<http://search.cpan.org/dist/POD-Tested>
 =head1 SEE ALSO
 
 L<Test::Inline>
+
+L<Test::Pod::Snippets>
 
 L<Lexical::Persistence>
 

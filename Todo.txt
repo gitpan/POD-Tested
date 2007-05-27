@@ -1,3 +1,9 @@
+
+Redirect print and warn automatically and have it ready in get_redirected_test_output()
+
+Add =begin common_but_not_in_pod
+
+
 inline tests in common section
 
 	my $cc_value = $config->Get(NAME => 'CC')
