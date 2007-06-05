@@ -14,16 +14,12 @@ use Test::Block qw($Plan);
 
 use POD::Tested ; 
 use IO::String;
+use Directory::Scratch ;
 
 {
 local $Plan = {'real empty POD' => 1} ;
 
-my $parser = POD::Tested->new();
-
-my $io = IO::String->new('') ;	
-
-$parser->parse_from_filehandle($io) ;	
-my $parsed_text = $parser->GetPOD() ;
+my $parser = POD::Tested->new(FILE_HANDLE => IO::String->new(''));
 
 my $expected_text = <<"EOE" ;
 
@@ -31,20 +27,15 @@ my $expected_text = <<"EOE" ;
 =cut
 EOE
 
-is($parsed_text,$expected_text, 'real empty POD') ;
+is($parser->GetPOD(), $expected_text, 'real empty POD') ;
 }
 
 {
 local $Plan = {'empty POD' => 1} ;
 
-my $parser = POD::Tested->new();
-
-my $io = IO::String->new(<<"EOT") ;	
+my $parser = POD::Tested->new(FILE_HANDLE => IO::String->new(<<"EOT")) ;	
 
 EOT
-
-$parser->parse_from_filehandle($io) ;	
-my $parsed_text = $parser->GetPOD() ;
 
 my $expected_text = <<"EOE" ;
 
@@ -52,24 +43,19 @@ my $expected_text = <<"EOE" ;
 =cut
 EOE
 
-is($parsed_text,$expected_text, 'empty POD') ;
+is($parser->GetPOD(), $expected_text, 'empty POD') ;
 }
 
 {
 local $Plan = {'heads POD' => 1} ;
 
-my $parser = POD::Tested->new();
-
-my $io = IO::String->new(<<"EOT") ;
+my $parser = POD::Tested->new(FILE_HANDLE => IO::String->new(<<"EOT")) ;
 =head1 HEAD1
 
 =head2 HEAD2
 
 =cut
 EOT
-
-$parser->parse_from_filehandle($io) ;	
-my $parsed_text = $parser->GetPOD() ;
 
 my $expected_text = <<"EOE" ;
 =head1 HEAD1
@@ -79,15 +65,13 @@ my $expected_text = <<"EOE" ;
 =cut
 EOE
 
-is($parsed_text,$expected_text, 'heads POD') ;
+is($parser->GetPOD(), $expected_text, 'heads POD') ;
 }
 
 {
 local $Plan = {'text POD' => 1} ;
 
-my $parser = POD::Tested->new();
-
-my $io = IO::String->new(<<"EOT") ;
+my $parser = POD::Tested->new(FILE_HANDLE => IO::String->new(<<"EOT")) ;
 =head1 HEAD1
 
 some text
@@ -98,9 +82,6 @@ more text
 
 =cut
 EOT
-
-$parser->parse_from_filehandle($io) ;	
-my $parsed_text = $parser->GetPOD() ;
 
 my $expected_text = <<"EOE" ;
 =head1 HEAD1
@@ -114,20 +95,16 @@ more text
 =cut
 EOE
 
-is($parsed_text,$expected_text, 'text POD') ;
+is($parser->GetPOD(), $expected_text, 'text POD') ;
 }
 
 {
 local $Plan = {'test POD' => 2} ; # the one in this test plust the one in the POD
 
-my $parser = POD::Tested->new();
-
-my $io = IO::String->new(<<'EOT') ;
+my $parser = POD::Tested->new(FILE_HANDLE => IO::String->new(<<'EOT')) ;
 =head1 HEAD1
 
 some text
-
-=begin common
 
   my $cc = 'gcc' ;
 
@@ -136,19 +113,15 @@ some text
 
   my $ar = 'ar' ;
 
-=end common
-
-=begin test
+=begin hidden
 
   is($cc,'gcc') ;
 
-=end test
+=end hidden
 
 =cut
 EOT
 
-$parser->parse_from_filehandle($io) ;	
-my $parsed_text = $parser->GetPOD() ;
 
 my $expected_text = <<'EOE' ;
 =head1 HEAD1
@@ -165,31 +138,22 @@ some text
 =cut
 EOE
 
-is($parsed_text,$expected_text, 'test POD') ;
+is($parser->GetPOD(), $expected_text, 'test POD') ;
 }
 
 {
 local $Plan = {'common POD' => 2} ; # the one in this test plust the one in the POD
 
-my $parser = POD::Tested->new();
-
-my $io = IO::String->new(<<'EOT') ;
+my $parser = POD::Tested->new(FILE_HANDLE =>IO::String->new(<<'EOT')) ;
 =head1 HEAD1
 
 some text
 
-=begin common
-
   my $cc = 'gcc' ;
   is($cc,'gcc') ;
 
-=end common
-
 =cut
 EOT
-
-$parser->parse_from_filehandle($io) ;	
-my $parsed_text = $parser->GetPOD() ;
 
 my $expected_text = <<'EOE' ;
 =head1 HEAD1
@@ -202,35 +166,28 @@ some text
 =cut
 EOE
 
-is($parsed_text,$expected_text, 'common POD') ;
+is($parser->GetPOD(),$expected_text, 'common POD') ;
 }
 
 {
 local $Plan = {'generate POD' => 1} ; # the one in this test plust the one in the POD
 
-my $parser = POD::Tested->new();
-
-my $io = IO::String->new(<<'EOT') ;
+my $parser = POD::Tested->new(FILE_HANDLE =>IO::String->new(<<'EOT')) ;
 =head1 HEAD1
 
 some text
 
-=begin common
-
   my $cc = 'gcc' ;
 
-=end common
-
-=begin test
+=begin hidden
 
   generate_pod("generates: '$cc'\n") ;
 
-=end test
+=end hidden
 
 =cut
 EOT
 
-$parser->parse_from_filehandle($io) ;	
 my $parsed_text = $parser->GetPOD() ;
 
 my $expected_text = <<'EOE' ;
@@ -251,24 +208,22 @@ is($parsed_text,$expected_text, 'generate POD') ;
 {
 local $Plan = {'share variables' => 1} ; # the one in this test plust the one in the POD
 
-my $parser = POD::Tested->new();
-
-my $io = IO::String->new(<<'EOT') ;
+my $parser = POD::Tested->new(FILE_HANDLE =>IO::String->new(<<'EOT')) ;
 =head1 HEAD1
 
 some text
 
-=begin test
+=begin hidden
 
   my $cc = 'gcc' ;
 
-=end test
+=end hidden
 
-=begin test
+=begin hidden
 
   generate_pod("generates: '$cc'\n\n") ;
 
-=end test
+=end hidden
 
 =begin something
 
@@ -281,7 +236,6 @@ something
 =cut
 EOT
 
-$parser->parse_from_filehandle($io) ;	
 my $parsed_text = $parser->GetPOD() ;
 
 my $expected_text = <<'EOE' ;
@@ -308,24 +262,22 @@ is($parsed_text,$expected_text, 'share variables') ;
 {
 local $Plan = {'verbose' => 1} ; # the one in this test plust the one in the POD
 
-my $parser = POD::Tested->new(VERBOSE => 1);
-
-my $io = IO::String->new(<<'EOT') ;
+my $parser = POD::Tested->new(VERBOSE => 1, FILE_HANDLE =>IO::String->new(<<'EOT')) ;
 =head1 HEAD1
 
 some text
 
-=begin test
+=begin hidden
 
   my $cc = 'gcc' ;
 
-=end test
+=end hidden
 
-=begin test
+=begin hidden
 
   generate_pod("generates: '$cc'\n\n") ;
 
-=end test
+=end hidden
 
 =begin something
 
@@ -334,7 +286,6 @@ some text
 =cut
 EOT
 
-$parser->parse_from_filehandle($io) ;	
 my $parsed_text = $parser->GetPOD() ;
 
 my $expected_text = <<'EOE' ;
@@ -357,9 +308,7 @@ is($parsed_text,$expected_text, 'verbose does not affect generated POD') ;
 {
 local $Plan = {'for' => 1} ; # the one in this test plust the one in the POD
 
-my $parser = POD::Tested->new();
-
-my $io = IO::String->new(<<'EOT') ;
+my $parser = POD::Tested->new(FILE_HANDLE =>IO::String->new(<<'EOT')) ;
 =head1 HEAD1
 
 some text
@@ -371,7 +320,6 @@ some text
 =cut
 EOT
 
-$parser->parse_from_filehandle($io) ;	
 my $parsed_text = $parser->GetPOD() ;
 
 my $expected_text = <<'EOE' ;
@@ -390,21 +338,17 @@ is($parsed_text,$expected_text, 'for') ;
 {
 local $Plan = {'compile error' => 1} ; # the one in this test plust the one in the POD
 
-my $parser = POD::Tested->new();
+throws_ok
+	{
+	my $parser = POD::Tested->new(FILE_HANDLE =>IO::String->new(<<'EOT')) ;
 
-my $io = IO::String->new(<<'EOT') ;
-
-=begin test
+=begin hidden
 
 $a = ;
 
-=end test
+=end hidden
 
 EOT
-
-throws_ok
-	{
-	$parser->parse_from_filehandle($io) ;
 	}
 	qr/syntax error at/, 'compile error' ;
 }
@@ -412,27 +356,23 @@ throws_ok
 {
 local $Plan = {'run time error' => 1} ; # the one in this test plust the one in the POD
 
-my $parser = POD::Tested->new();
+throws_ok
+	{
+	my $parser = POD::Tested->new(FILE_HANDLE =>IO::String->new(<<'EOT')) ;
 
-my $io = IO::String->new(<<'EOT') ;
-
-=begin test
+=begin hidden
 
 sub div_by_zero { my $a = 1; $a/0} ;
 
-=end test
+=end hidden
 
-=begin test
+=begin hidden
 
 div_by_zero() ;
 
-=end test
+=end hidden
 
 EOT
-
-throws_ok
-	{
-	$parser->parse_from_filehandle($io) ;
 	}
 	qr/Illegal division by zero/, 'run time error' ;
 }
@@ -441,74 +381,58 @@ throws_ok
 {
 local $Plan = {'no error' => 1} ; # the one in this test plust the one in the POD
 
-my $parser = POD::Tested->new();
+lives_ok
+	{
+	my $parser = POD::Tested->new(FILE_HANDLE =>IO::String->new(<<'EOT')) ;
 
-my $io = IO::String->new(<<'EOT') ;
-
-=begin test
+=begin hidden
 
   $a = 1 ;
 
 
   $b = '2' ;
 
-=end test
+=end hidden
 
 EOT
-
-lives_ok
-	{
-	$parser->parse_from_filehandle($io) ;
 	} 'no syntax error' ;
 }
 
 {
 local $Plan = {'no error' => 1} ; # the one in this test plust the one in the POD
 
-my $parser = POD::Tested->new();
-
-my $io = IO::String->new(<<'EOT') ;
-
-=begin common
+lives_ok
+	{
+	my $parser = POD::Tested->new(FILE_HANDLE =>IO::String->new(<<'EOT')) ;
 
 #something
 
   $a = 1 ;
 
-=end common 
-
-=begin test
+=begin hidden
 
 #something
 
   $b = '2' ;
 
-=end test
+=end hidden
 
 EOT
-
-lives_ok
-	{
-	$parser->parse_from_filehandle($io) ;
 	} 'no syntax error' ;
 }
 
 {
 local $Plan = {'verbose pod generation' => 1} ;
 
-my $parser = POD::Tested->new(VERBOSE_POD_GENERATION => 1);
-
-my $io = IO::String->new(<<'EOT') ;
-
-=begin common
+lives_ok
+	{
+	my $parser = POD::Tested->new(VERBOSE_POD_GENERATION => 1, FILE_HANDLE =>IO::String->new(<<'EOT')) ;
 
 #something
 
   $a = 1 ;
 
-=end common 
-
-=begin test
+=begin hidden
 
 #something
 
@@ -516,32 +440,28 @@ my $io = IO::String->new(<<'EOT') ;
   
   generate_pod() ;
 
-=end test
+=end hidden
 
 EOT
-
-lives_ok
-	{
-	$parser->parse_from_filehandle($io) ;
 	} 'no syntax error' ;
 }
 
 {
 local $Plan = {'input' => 1} ;
 
-my $parser = POD::Tested->new(VERBOSE_POD_GENERATION=> 1, INPUT => 'local string IO');
-
-my $io = IO::String->new(<<'EOT') ;
-
-=begin common
+lives_ok
+	{
+	my $parser = POD::Tested->new
+				(
+				VERBOSE_POD_GENERATION=> 1,
+				FILE => 'local string IO',
+				FILE_HANDLE =>IO::String->new(<<'EOT')) ;
 
 #something
 
   $a = 1 ;
 
-=end common 
-
-=begin test
+=begin hidden
 
 #something
 
@@ -549,12 +469,191 @@ my $io = IO::String->new(<<'EOT') ;
   
   generate_pod() ;
 
-=end test
+=end hidden
 
 EOT
+	} 'no syntax error' ;
+}
+
+{
+local $Plan = {'all pod is test' => 1} ;
+
+my $parser = POD::Tested->new(FILE_HANDLE =>IO::String->new(<<'EOT')) ;
+=head1 HEAD1
+
+  my $cc = 'gcc' ;
+  is($cc,'gcc') ;
+  
+=cut
+EOT
+
+}
+
+{
+local $Plan = {'multiline verbatim block' => 3} ;
+
+my $parser = POD::Tested->new(FILE_HANDLE =>IO::String->new(<<'EOT')) ;
+=head1 HEAD1
+
+some text
+
+  my $cc = 'gcc' ;
+  
+  
+  
+  my $v = 1 ;
+
+# some text
+# more
+
+  my $ar = 'ar' ;
+
+=begin hidden
+
+  is($cc,'gcc') ;
+  is($v,'1') ;
+
+=end hidden
+
+=cut
+EOT
+
+
+my $expected_text = <<'EOE' ;
+=head1 HEAD1
+
+some text
+
+  my $cc = 'gcc' ;
+  
+  
+  
+  my $v = 1 ;
+
+# some text
+# more
+
+  my $ar = 'ar' ;
+
+=cut
+EOE
+
+is($parser->GetPOD(),$expected_text, 'multiline verbatim block') ;
+}
+
+{
+local $Plan = {'multiline verbatim block taken as single test' => 3} ;
 
 lives_ok
 	{
-	$parser->parse_from_filehandle($io) ;
-	} 'no syntax error' ;
+	my $parser = POD::Tested->new(FILE_HANDLE =>IO::String->new(<<'EOT')) ;
+=head1 HEAD1
+
+some text
+
+  for my $v (qw(1 2))
+	{
+	# test if blank lines split the test block
+	
+	
+	my $v1 = $v ;
+	
+	my $v2 = $v1 ;
+	
+	is($v2, $v) ;
+	
+	}
+
+=cut
+EOT
+	}
+
 }
+
+{
+local $Plan = {'input through string' => 3} ;
+
+#also does coverage test for INPUT and LINE
+
+lives_ok
+	{
+	my $parser = POD::Tested->new(STRING => <<'EOT', VERBOSE_POD_GENERATION => 1, INPUT => 'input name from test', LINE => 'input line from a test') ;
+=head1 HEAD1
+
+some text
+
+  for my $v (qw(1 ))
+	{
+	
+	is($v, 1) ;
+	
+	}
+
+  generate_pod("  #test\n") ;
+
+=cut
+EOT
+
+
+	is($parser->GetPOD(),<<'EOT', 'strin input with input and line') ;
+=head1 HEAD1
+
+some text
+
+  for my $v (qw(1 ))
+	{
+	
+	is($v, 1) ;
+	
+	}
+
+  generate_pod("  #test\n") ;
+
+  #test
+
+=cut
+EOT
+	}
+
+}
+
+{
+local $Plan = {'input through file' => 2} ;
+
+lives_ok
+	{
+	my $scratch = new Directory::Scratch();
+	my ($fh,$file_name) = $scratch->tempfile() ;
+	
+	print $fh <<'EOT';
+=head1 HEAD1
+
+some text
+
+=for something ignored
+
+=for POD::Tested reset
+
+=cut
+EOT
+	close($fh) ;
+
+	my $parser = POD::Tested->new(FILE => "$file_name") ;
+
+	my $parsed_text = $parser->GetPOD() ;
+
+	my $expected_text = <<'EOE' ;
+=head1 HEAD1
+
+some text
+
+=for something ignored
+
+=cut
+EOE
+
+	is($parsed_text,$expected_text, 'for') ;
+	}
+
+}
+

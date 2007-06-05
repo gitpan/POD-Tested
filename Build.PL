@@ -209,6 +209,7 @@ my $build = $class->new
 		'Lexical::Persistence' => 0,
 		'File::Copy' => 0,
 		
+		'Directory::Scratch' => 0,
 		'Test::Block' => 0,
 		'Test::Dependencies' => 0,
 		'Test::Distribution' => 0,

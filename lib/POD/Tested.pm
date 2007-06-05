@@ -12,7 +12,7 @@ BEGIN
 use Sub::Exporter -setup => { exports => [ qw() ] } ;
 
 use vars qw ($VERSION @ISA @EXPORT_OK %EXPORT_TAGS);
-$VERSION     = 0.02;
+$VERSION  = 0.03 ;
 
 #~ use version ;
 #~ our $VERSION  = qv('0.02') ;
@@ -28,6 +28,7 @@ Readonly my $EMPTY_STRING => q{} ;
 use Carp qw(carp croak confess) ;
 
 use  Lexical::Persistence ;
+use IO::String ;
 
 #-------------------------------------------------------------------------------------------------------------------------------
 
@@ -50,6 +51,9 @@ POD::Tested - Test the code in your POD and generates POD.
 =head1 DESCRIPTION
 
 This module lets you write POD documents that are testable. It also let's you generate pod sections dynamically.
+
+Any verbatim section (indented section) is considered part of the POD and the code to be tested. See the I<not_tested>
+tag for verbatim sections that are not code.
 
 =head1 DOCUMENTATION
 
@@ -98,14 +102,14 @@ Let's run the above POD through B<pod_tested.pl>.
 	
 	Some Text
 	
-	=begin test
+	=begin hidden
 	
 	  my $cc = 'cc' ;
 	  my $expected_cc = 'cc' ;
 	  
 	  is($cc, $expected_cc, 'expected value') ;
 	
-	=end test
+	=end hidden
 
 Let's run the above POD through B<pod_tested.pl>.
 
@@ -140,8 +144,6 @@ Most often we want to show an example in the POD and verify it.
 	
 	Some text
 	
-	=begin common
-	
 	  use Config::Hierarchical ;
 	   
 	  my $config = new Config::Hierarchical(); 
@@ -153,14 +155,12 @@ Most often we want to show an example in the POD and verify it.
 	  
 	  print "CC = '$cc_value'\n" ;
 	
-	=end common
-	
-	=begin test
+	=begin hidden
 	
 	  my $expected_output = 'gcc' ;
 	  is($cc_value, $expected_output, 'expected value') ;
 	
-	=end test
+	=end hidden
 	
 	=cut 
 
@@ -187,14 +187,14 @@ The POD is:
 	Some text
 	
 	  use Config::Hierarchical ;
-	
+	  
 	  my $config = new Config::Hierarchical();
-	
+	  
 	  $config->Set(NAME => 'CC', VALUE => 'acc') ;
 	  $config->Set(NAME => 'CC', VALUE => 'gcc') ;
-	
+	  
 	  my $cc_value = $config->Get(NAME => 'CC') ;
-	
+	  
 	  print "CC = '$cc_value'\n" ;
 	
 	=cut
@@ -207,14 +207,14 @@ The POD is:
 	
 	Some Text
 	
-	=begin test
+	=begin hidden
 	
 	  my $cc = 'cc' ;
 	  my $expected_cc = 'cc' ;
 	  
 	  is($cc_value, $expected_output) ;
 	
-	=end test
+	=end hidden
 
 Let's run the above POD through B<pod_tested.pl>.
 
@@ -230,14 +230,10 @@ The following pod:
 
 	=head1 HEADER
 	
-	=begin test
-	
 	  my $cc =  ;
 	  my $expected_cc = 'cc' ;
 	  
 	  is($cc, $expected_cc) ;
-	
-	=end test
 	
 	=cut 
 
@@ -251,13 +247,9 @@ while:
 
 	=head1 HEADER
 	
-	=begin test
-	
 	  sub error { 1/0 }
 	  
 	  error() ;
-	
-	=end test
 	
 	=cut 
 
@@ -273,25 +265,27 @@ produces:
 	
 	Some text
 	
-	=begin common
-	
 	  my $cc_value = 'CC' ;
 	  
 	  print "CC = '$cc_value'\n" ;
 	
-	=end common
-	
 	More text or code examples. 
 	
+	=begin not_tested
+	
+	  # this section is not part of the test but is part of the POD
+	  
 	  my $non_tested_code = 1 ;
 	  DoSomething() ;
 	
-	=begin test
+	=end not_tested
+	
+	=begin hidden
 	
 	  my $expected_output = 'gcc' ;
 	  is($cc_value, $expected_output) ;
 	
-	=end test
+	=end hidden
 	
 	=cut 
 
@@ -316,43 +310,35 @@ the output would be:
 	# Looks like you failed 1 test of 1.
 
 Note that any test fails and the output file already exists, pod_tested will rename the existing file
-so there is no risk for using an invalid file.
+so there is little risk for using an invalid file.
 
 =head2 Reseting your context
 
 	=head1 HEADER
 	
-	= head2 Example 1
-	
-	=begin common
+	=head2 Example 1
 	
 	  my $cc_value = 'CC' ;
 	
-	=end common
-	
 	<Some explaination about test 1 here>
 	
-	=begin test
+	=begin hidden
 	
 	  is($cc_value, 'CC') ;
 	
-	=end test
+	=end hidden
 	
 	=head2 Example 2
 	
-	=begin common
-	
 	  my $cc_value = 'ABC' ;
-	
-	=end common
 	
 	<Some explaination about test 2 here>
 	
-	=begin test
+	=begin hidden
 	
 	  is($cc_value, 'ABC') ;
 	
-	=end test
+	=end hidden
 	
 	=cut
 
@@ -383,37 +369,29 @@ B<=for POD::Tested reset>
 	
 	= head2 Example 1
 	
-	=begin common
-	
 	  my $cc_value = 'CC' ;
-	
-	=end common
 	
 	<Some explaination about test 1 here>
 	
-	=begin test
+	=begin hidden
 	
 	  is($cc_value, 'CC') ;
 	
-	=end test
+	=end hidden
 	
 	=head2 Example 2
 	
 	=for POD::Tested reset
 	
-	=begin common
-	
 	  my $cc_value = 'ABC' ;
-	
-	=end common
 	
 	<Some explaination about test 2 here>
 	
-	=begin test
+	=begin hidden
 	
 	  is($cc_value, 'ABC') ;
 	
-	=end test
+	=end hidden
 	
 	=cut
 
@@ -463,8 +441,6 @@ result of some code execution to the POD. We'll use B<generate_pod> to achieve t
 	
 	=head2 Simple usage
 	
-	=begin common
-	
 	  use Config::Hierarchical ;
 	   
 	  my $config = new Config::Hierarchical(); 
@@ -473,11 +449,9 @@ result of some code execution to the POD. We'll use B<generate_pod> to achieve t
 	  my $cc_value = $config->Get(NAME => 'CC') ;
 	  print "CC = '$cc_value'\n" ;
 	
-	=end common
-	
 	Result:
 	
-	=begin test
+	=begin hidden
 	
 	  my $expected_output = 'acc' ;
 	  is($cc_value, $expected_output) ;
@@ -485,7 +459,7 @@ result of some code execution to the POD. We'll use B<generate_pod> to achieve t
 	  generate_pod("  CC = '$expected_output'\n\n") ;
 	  generate_pod($config->GetHistoryDump(NAME => 'CC')) ;
 	
-	=end test
+	=end hidden
 	
 	=cut
 
@@ -531,13 +505,13 @@ you don't need to copy/paste output from your modules into your POD as you can g
 
 =head2 Using more test modules than the default ones
 
-simply use the modules you need in a B<=begin test> section.
+simply use the modules you need in a B<=begin hidden> section.
 
-	=begin test
+	=begin hidden
 	
 		use Test::Some::Great::Module ;
 	
-	= end test
+	=end hidden
 
 =head1 SUBROUTINES/METHODS
 
@@ -556,6 +530,24 @@ sub new
 
 =head3 Options
 
+You must, in the new sub, pass what your POD source is with one of the following options:
+
+=over 4
+
+=item * FILE_HANDLE
+
+
+=item * FILE
+
+
+=item * STRING
+
+
+=back
+
+
+Other options:
+
 =over 2
 
 =item * VERBOSE  
@@ -566,21 +558,21 @@ Set to true to display extra information when parsing and testing POD.
 
 Set to true to display the POD added through B<generate_pod()>.
 
-=item * COMMON_TAG 
+=item * NOT_TESTED
 
-The tag that is used to declare a section common to the POD and the tests.
+The tag that is used to declare a section that are not common to the POD and the tests.
 
 default value is:
 
-	qr/\s*common/xmi
+	qr/\s*not_tested/xmi
 
-=item * TEST_TAG 
+=item * HIDDEN_TAG 
 
 The tag that is used to declare a test section.
 
 default value is:
 
-	qr/\s*test/xmi
+	qr/\s*hidden/xmi
 
 =item * RESET_TAG 
 
@@ -610,10 +602,9 @@ tested.
 
 =cut
 
-my ($invocant, @setup_data) = @_ ;
+my ($class, @setup_data) = @_ ;
 
-my $class = ref($invocant) || $invocant ;
-confess 'Invalid constructor call!' unless defined $class ;
+confess 'Invalid constructor call!' if @setup_data % 2 ;
 
 my $object = 
 	{
@@ -625,8 +616,8 @@ my $object =
 	POD         => $EMPTY_STRING,
 	LP          => Lexical::Persistence->new(),
 	
-	COMMON_TAG  => 	qr/\s*common/xmi,
-	TEST_TAG    => qr/\s*test/xmi,
+	NOT_TESTED_TAG  => 	qr/\s*not_tested/xmi,
+	HIDDEN_TAG    => qr/\s*hidden/xmi,
 	RESET_TAG   => qr/\s*POD::Tested\s+reset/xmi,
 	
 	DEFAULT_TEST_MODULES => <<'EOM',
@@ -661,6 +652,25 @@ my ($package, $file_name, $line) = caller() ;
 bless $object, $class ;
 
 $object->initialize() ;
+
+if(defined $object->{FILE_HANDLE})
+	{
+	$object->parse_from_filehandle($object->{FILE_HANDLE}) ;	
+	}
+elsif(defined $object->{FILE})
+	{
+	$object->parse_from_file($object->{FILE}) ;	
+	}
+elsif(defined $object->{STRING})
+	{
+	$object->parse_from_filehandle( IO::String->new($object->{STRING})) ;	
+	}
+else
+	{
+	die "Expecting input data through argument 'STRING', 'FILE' or 'FILE_HANDLE'!\n" ;
+	}
+
+$object->RunTestCode() ;
 
 return($object) ;
 }
@@ -698,36 +708,77 @@ for($command)
 		last ;
 		} ;
 		
-	$_ eq 'begin' && ($paragraph =~ $parser->{TEST_TAG} || $paragraph =~ $parser->{COMMON_TAG}) && do
+	$_ eq 'begin' && do
 		{
-		$parser->{BLOCK_START} = 0 ;
 		$parser->{STATE} = $paragraph ;
+		$parser->{BLOCK_START} = 0 ;
+		
+		 if($paragraph =~ $parser->{HIDDEN_TAG})
+			{
+			}
+		else
+			{
+			$parser->{POD} .= "=$command $paragraph\n\n" ;
+			}
+			
 		last ;
 		} ;
 		
-	$_ eq 'end' && ($paragraph =~ $parser->{TEST_TAG} || $paragraph =~ $parser->{COMMON_TAG}) && do
+	$_ eq 'end' && do
 		{
+		 if($paragraph =~ $parser->{HIDDEN_TAG})
+			{
+			$parser->RunTestCode() ;
+			}
+		else
+			{
+			$parser->{POD} .= "=$command $paragraph\n\n" ;
+			}
+			
+		$parser->{BLOCK_START} = 0 ;
 		$parser->{STATE} = $EMPTY_STRING;
 		
-		my $input=  $parser->input_file() ;
-		$input = $global_current_active_parser->{INPUT} if defined $global_current_active_parser->{INPUT} ;
-		
-		EvalInContext
-			(
-			$parser->{LP},
-			$parser->{CODE},
-			$parser->{VERBOSE},
-			$input ,
-			$parser->{BLOCK_START}
-			) ;
-		
-		$parser->{CODE} = $EMPTY_STRING ;
 		last ;
 		} ;
 		
 	$parser->{POD} .= "=$command $paragraph\n\n" ;
 	}
 	
+return(1) ;
+}
+
+#-------------------------------------------------------------------------------------------------------------------------------
+
+sub RunTestCode
+{
+
+=head2 RunTestCode
+
+Not to be used directly.
+
+=cut
+
+my ($parser) = @_ ;
+
+return(0) if $parser->{CODE} eq $EMPTY_STRING ;
+
+my $input=  $parser->input_file() ;
+$input = $global_current_active_parser->{INPUT} if defined $global_current_active_parser->{INPUT} ;
+
+my $line = $parser->{BLOCK_START} ;
+$line= $global_current_active_parser->{LINE} if defined $global_current_active_parser->{LINE} ;
+
+EvalInContext
+	(
+	$parser->{LP},
+	$parser->{CODE},
+	$parser->{VERBOSE},
+	$input ,
+	$line,
+	) ;
+
+$parser->{CODE} = $EMPTY_STRING ;
+
 return(1) ;
 }
 
@@ -746,14 +797,18 @@ my ($parser, $paragraph, $line_num, $pod_para) = @_;
 
 $parser->{BLOCK_START} =  $line_num if $parser->{BLOCK_START} == 0;
 
-if($parser->{STATE} =~ $parser->{TEST_TAG})
+#~ print "verbatim $parser->{STATE} >>$paragraph<<\n" ;
+
+if($parser->{STATE} =~ $parser->{HIDDEN_TAG})
 	{
 	$parser->{CODE} .= $paragraph ;
 	}
-elsif($parser->{STATE} =~ $parser->{COMMON_TAG})
+elsif($parser->{STATE} eq $EMPTY_STRING)
 	{
 	$parser->{CODE} .= $paragraph ;
 	$parser->{POD} .= $paragraph ;
+	
+	$parser->{BLOCK_START} = 0 ;
 	}
 else
 	{
@@ -776,16 +831,15 @@ Handles POD textblocks. See Pod::Parser for more information.
 
 my ($parser, $paragraph, $line_num, $pod_para) = @_;
 
+#~ print "textblock $parser->{STATE} >>$paragraph<<\n" ;
+
+$parser->RunTestCode() ;
+
 $parser->{BLOCK_START} =  $line_num if $parser->{BLOCK_START} == 0;
 
-if($parser->{STATE} =~ $parser->{TEST_TAG})
+if($parser->{STATE} =~ $parser->{HIDDEN_TAG})
 	{
 	$parser->{CODE} .= $paragraph ;
-	}
-elsif($parser->{STATE} =~ $parser->{COMMON_TAG})
-	{
-	$parser->{CODE} .= $paragraph ;
-	$parser->{POD} .= $paragraph ;
 	}
 else
 	{
@@ -805,14 +859,14 @@ sub generate_pod
 =cut
 
 my ($pod) = join ($EMPTY_STRING, @_) ;
-$pod ||= $EMPTY_STRING ;
 
 if($global_current_active_parser->{VERBOSE_POD_GENERATION})
 	{
 	my ($package, $file_name, $line) = caller() ;
 	
 	my $input = '(unknown)';
-	$input = $global_current_active_parser->{INPUT} if defined $global_current_active_parser->{INPUT} ;
+	$input = $global_current_active_parser->{FILE} if defined $global_current_active_parser->{FILE} ;
+	$line= $global_current_active_parser->{LINE} if defined $global_current_active_parser->{LINE} ;
 	
 	print "# Generating POD at '$input' line $line:\n" . $pod ;
 	}
@@ -858,14 +912,14 @@ my ($lp, $original_code, $verbose, $file, $line) = @_ ;
 
 print "# output from '$file:$line':\n\n" ;
 
-my($code_as_text, $code) = GetWrappedCode($lp, $EMPTY_STRING, $original_code, $EMPTY_STRING, $file, $line) ;
-
 print <<"EOC" if $verbose ;
 running code from '$file:$line':
 
 $original_code
 
 EOC
+
+my($code_as_text, $code) = GetWrappedCode($lp, $EMPTY_STRING, $original_code, $EMPTY_STRING, $file, $line) ;
 
 #~ print <<"EOC" ;
 #~ Generated code:

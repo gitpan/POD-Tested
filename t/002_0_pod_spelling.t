@@ -14,6 +14,7 @@ add_stopwords
 		EvalInContext
 		GetPOD
 		GetWrappedCode
+		RunTestCode
 		textblock
 		textblocks
 		

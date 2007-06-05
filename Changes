@@ -1,3 +1,9 @@
+0.03
+	FIXED: VERBOSE displays the test code even if it contains errors
+	CHANGED: (MAJOR CHANGE) remove =begin common and use verbatim blocks as test and pod
+	CHANGED: =begin test is now =begin hidden
+	ADDED: =begin not_tested for verbatim code that is not part of a test
+	
 0.02
 	FIXED: missing module dependency
 	FIXED: division by zero example

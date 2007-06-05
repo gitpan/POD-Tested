@@ -40,8 +40,7 @@ if
 	push @options_to_pod_tested, (VERBOSE  => $verbose) if defined $verbose ;
 	push @options_to_pod_tested, (VERBOSE_POD_GENERATION  => $verbose_pod_generation) if defined $verbose_pod_generation ;
 	
-	my $parser = POD::Tested->new(@options_to_pod_tested);
-	$parser->parse_from_file($input) ;	
+	my $parser = POD::Tested->new(@options_to_pod_tested, FILE => $input);
 
 	my $test = Test::More->builder ;
 	use Data::TreeDumper ;
