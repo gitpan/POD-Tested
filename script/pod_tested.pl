@@ -12,6 +12,9 @@ use POD::Tested ;
 use File::Slurp ;
 use Getopt::Long ;
 
+use English qw( -no_match_vars ) ;
+use Carp ;
+
 use vars qw ($VERSION);
 $VERSION     = 0.01;
 
@@ -60,18 +63,18 @@ if
 			}
 		
 		my $list_of_failed = join(', ', @failed_indexes) ;
-		print "# No POD output will be generated.\n# Failed tests: $list_of_failed.\n" ;
+		print "# No POD output will be generated.\n# Failed tests: $list_of_failed.\n" or croak $ERRNO ;
 		
 		if(-e $output)
 			{
 			use File::Copy ;
 			move $output, "${output}.failed_pod_tested.txt" ;
-			print "# Moving '$output' to '${output}.failed_pod_tested.txt'\n" ;
+			print "# Moving '$output' to '${output}.failed_pod_tested.txt'\n" or croak $ERRNO ;
 			}
 		}
 	else
 		{
-		print "# Generating POD in '$output'.\n" ;
+		print "# Generating POD in '$output'.\n" or croak $ERRNO ;
 		write_file($output, $parser->GetPOD()) ;
 		}
 	}

@@ -12,7 +12,7 @@ BEGIN
 use Sub::Exporter -setup => { exports => [ qw() ] } ;
 
 use vars qw ($VERSION @ISA @EXPORT_OK %EXPORT_TAGS);
-$VERSION  = 0.03 ;
+$VERSION  = 0.05 ;
 
 #~ use version ;
 #~ our $VERSION  = qv('0.02') ;
@@ -312,7 +312,7 @@ the output would be:
 Note that any test fails and the output file already exists, pod_tested will rename the existing file
 so there is little risk for using an invalid file.
 
-=head2 Reseting your context
+=head2 Resetting your context
 
 	=head1 HEADER
 	
@@ -667,7 +667,7 @@ elsif(defined $object->{STRING})
 	}
 else
 	{
-	die "Expecting input data through argument 'STRING', 'FILE' or 'FILE_HANDLE'!\n" ;
+	croak "Expecting input data through argument 'STRING', 'FILE' or 'FILE_HANDLE'!\n" ;
 	}
 
 $object->RunTestCode() ;
@@ -858,7 +858,9 @@ sub generate_pod
 
 =cut
 
-my ($pod) = join ($EMPTY_STRING, @_) ;
+my (@pod_snippets) = @_ ;
+
+my ($pod) = join ($EMPTY_STRING, @pod_snippets) ;
 
 if($global_current_active_parser->{VERBOSE_POD_GENERATION})
 	{
@@ -868,7 +870,7 @@ if($global_current_active_parser->{VERBOSE_POD_GENERATION})
 	$input = $global_current_active_parser->{FILE} if defined $global_current_active_parser->{FILE} ;
 	$line= $global_current_active_parser->{LINE} if defined $global_current_active_parser->{LINE} ;
 	
-	print "# Generating POD at '$input' line $line:\n" . $pod ;
+	OutputStrings("# Generating POD at '$input' line $line:\n$pod") ;
 	}
 
 $global_current_active_parser->{POD} .= $pod ;
@@ -910,23 +912,19 @@ Not to be used directly.
 
 my ($lp, $original_code, $verbose, $file, $line) = @_ ;
 
-print "# output from '$file:$line':\n\n" ;
+OutputStrings("# output from '$file:$line':\n\n") ;
 
-print <<"EOC" if $verbose ;
+if($verbose)
+	{
+	OutputStrings(<<"EOC") ;
 running code from '$file:$line':
 
 $original_code
 
 EOC
-
+	}
+	
 my($code_as_text, $code) = GetWrappedCode($lp, $EMPTY_STRING, $original_code, $EMPTY_STRING, $file, $line) ;
-
-#~ print <<"EOC" ;
-#~ Generated code:
-
-#~ $code_as_text
-
-#~ EOC
 
 eval { $code->() } ;
 if($EVAL_ERROR)
@@ -934,7 +932,7 @@ if($EVAL_ERROR)
 	croak $EVAL_ERROR  ;
 	}	
 	
-print "\n" ;
+OutputStrings("\n") ;
 
 return(1) ;
 }
@@ -942,7 +940,7 @@ return(1) ;
 #-------------------------------------------------------------------------------------------------------------------------------
 
 sub GetWrappedCode
-{
+{ ## no critic (Subroutines::ProhibitManyArgs)
 	
 =head2 GetWrappedCode
 
@@ -976,6 +974,24 @@ my $wrapped_code = $lp->wrap($compiled) ;
 
 return($subified, $wrapped_code) ;
 }
+
+#-------------------------------------------------------------------------------------------------------------------------------
+
+sub OutputStrings
+{
+
+=head2 OutputStrings
+
+Not to be used directly.
+
+=cut
+
+my (@strings) = @_ ;
+
+print(@strings) or croak $ERRNO ;
+
+return ;
+} 
 
 #-------------------------------------------------------------------------------------------------------------------------------
 

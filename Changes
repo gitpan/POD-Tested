@@ -1,3 +1,9 @@
+0.05
+	CHANGED: replaced POD::Spelling with Perl::Critic policy
+	
+0.04
+	FIXED: missing "use Test::More" in t/000_fixme.t
+	
 0.03
 	FIXED: VERBOSE displays the test code even if it contains errors
 	CHANGED: (MAJOR CHANGE) remove =begin common and use verbatim blocks as test and pod

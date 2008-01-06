@@ -22,6 +22,7 @@ use Test::Perl::Critic
 		'Documentation::RequirePodAtEnd',
 		'ControlStructures::ProhibitUnlessBlocks',
 		'CodeLayout::RequireTidyCode',
+		'CodeLayout::ProhibitTrailingWhitespace' ,
 		'CodeLayout::ProhibitHardTabs',
 		], 
 		
