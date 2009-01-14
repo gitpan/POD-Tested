@@ -6,7 +6,6 @@ use strict ;
 use warnings ;
 
 use Carp ;
-use Data::TreeDumper ;
 
 use POD::Tested ; 
 use File::Slurp ;
@@ -46,8 +45,6 @@ if
 	my $parser = POD::Tested->new(@options_to_pod_tested, FILE => $input);
 
 	my $test = Test::More->builder ;
-	use Data::TreeDumper ;
-	#~ print DumpTree [$test->details()], 'Tests results:' ;
 	
 	my $number_of_failed_tests = grep {$_->{ok} != 1} $test->details() ;
 

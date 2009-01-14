@@ -12,10 +12,7 @@ BEGIN
 use Sub::Exporter -setup => { exports => [ qw() ] } ;
 
 use vars qw ($VERSION @ISA @EXPORT_OK %EXPORT_TAGS);
-$VERSION  = 0.05 ;
-
-#~ use version ;
-#~ our $VERSION  = qv('0.02') ;
+$VERSION  = '0.06' ;
 }
 
 #-------------------------------------------------------------------------------------------------------------------------------
@@ -616,9 +613,9 @@ my $object =
 	POD         => $EMPTY_STRING,
 	LP          => Lexical::Persistence->new(),
 	
-	NOT_TESTED_TAG  => 	qr/\s*not_tested/xmi,
-	HIDDEN_TAG    => qr/\s*hidden/xmi,
-	RESET_TAG   => qr/\s*POD::Tested\s+reset/xmi,
+	NOT_TESTED_TAG  => 	qr/\s*not_tested/sxmi,
+	HIDDEN_TAG    => qr/\s*hidden/sxmi,
+	RESET_TAG   => qr/\s*POD::Tested\s+reset/sxmi,
 	
 	DEFAULT_TEST_MODULES => <<'EOM',
 use Test::More ;
@@ -892,9 +889,12 @@ transformers.
 
 my ($parser) = @_;
 
+Readonly my $PADDING_SIZE => 2 ;
+
 my $pod_end = substr($parser->{POD}, -2, 2) ;
+
 my $amount_of_nl = $pod_end =~ tr[\n][\n] ;
-my $padding_nl = "\n" x (2 - $amount_of_nl) ;
+my $padding_nl = "\n" x ($PADDING_SIZE - $amount_of_nl) ;
 
 return($parser->{POD} . $padding_nl . "=cut\n") ;
 }
