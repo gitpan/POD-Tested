@@ -140,6 +140,8 @@ my $build = $class->new
 		'Test::NoWarnings' => 0,
 		'Test::Warn' => 0,
 		'Directory::Scratch' => 0,
+		'Data::TreeDumper' => 0.35,
+		'File::Slurp' => 0,
 		},
 	requires => 
 		{

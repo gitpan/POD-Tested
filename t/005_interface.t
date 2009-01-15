@@ -35,7 +35,7 @@ throws_ok
 }
 
 {
-local $Plan = {'print coverage' => 1} ;
+local $Plan = {'print coverage' => 2} ;
 
 use IO::File;
 
@@ -44,15 +44,19 @@ my $current_fh = select ;
 my $fh = new IO::File; # not opened
 select $fh ;
 
-throws_ok
-	{
-	warning_is
+dies_ok
+	(
+	sub 
 		{
-		POD::Tested::OutputStrings('test') ;
-		}
-		qr/print() on unopened filehandle/, 'unopen filehandle' ;
-	}
-	qr/Bad file descriptor/, 'print failed' ;
+		warning_is
+			{
+			POD::Tested::OutputStrings('test') ;
+			}
+			qr/print() on unopened filehandle/, 'unopen filehandle' ;
+			},
+	'print failed',
+	) ;
 	
+ok($!{EBADF}, 'bad file descriptor' );
 select $current_fh ;
 }

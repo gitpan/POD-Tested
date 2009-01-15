@@ -1,6 +1,6 @@
 ---
 name: POD-Tested
-version: 0.06.2
+version: 0.06.4
 author:
   - 'Khemir Nadim ibn Hamouda. <nadim@khemir.net>'
 abstract: Test the code in your POD and generates POD.
@@ -14,7 +14,9 @@ requires:
   Readonly: 0
   Sub::Exporter: 0
 build_requires:
+  Data::TreeDumper: 0.35
   Directory::Scratch: 0
+  File::Slurp: 0
   Test::Block: 0
   Test::Exception: 0
   Test::NoWarnings: 0

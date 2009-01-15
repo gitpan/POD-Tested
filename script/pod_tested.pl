@@ -15,7 +15,7 @@ use English qw( -no_match_vars ) ;
 use Carp ;
 
 use vars qw ($VERSION);
-$VERSION     = 0.01;
+$VERSION     = '0.01' ;
 
 my ($output, $input, $verbose, $verbose_pod_generation, $help) ;
 
